@@ -4,19 +4,30 @@ showNotes();
 // adding note added by user to localStorage
 let addBtn = document.getElementById('addBtn');
 addBtn.addEventListener('click', function (e) {
+    let addTitle = document.getElementById('addTitle');
     let addTxt = document.getElementById('addTxt');
     let notes = localStorage.getItem('notes');
     if (notes == null) {
         notesObj = [];
     } else {
         notesObj = JSON.parse(notes);
-    }
-    if (addTxt.value.length == 0) {
-        alert('Please write something before adding');
+    };
+    if (addTxt.value.length == 0 || addTitle.value.length == 0) {
+        alert('Please add title and description before adding');
+        return false;
     } else {
-        notesObj.push(addTxt.value);
+        currentDate = new Date();
+        let myObj = {
+            title: addTitle.value,
+            text: addTxt.value,
+            date: currentDate.getDate(),
+            month: currentDate.getMonth(),
+            year: currentDate.getFullYear()
+        };
+        notesObj.push(myObj);
     };
     localStorage.setItem('notes', JSON.stringify(notesObj));
+    addTitle.value = '';
     addTxt.value = '';
     showNotes();
 });
@@ -34,9 +45,9 @@ function showNotes() {
         html += `
         <div class="noteCard card m-4" style="width: 18rem;">
             <div class="card-body">
-                <h5 class="card-title"><b>Note ${index + 1}</b></h5>
-                <p class="card-text">${element}</p>
-                <button id="${index}" onclick="deleteNote(this.id)" class="btn btn-dark">Delete Note</button>
+                <h5 class="card-title"><span class='text-muted'>${index + 1}.</span> <b>${element.title}</b> <small>Date - ${element.date}/${element.month}/${element.year}</small></h5><hr>
+                <p class="card-text">${element.text}</p>
+                <button id="${index}" onclick="deleteNote(this.id)" class="btn del-btn btn-dark">Delete Note</button>
             </div>
         </div>`;
     })
@@ -64,7 +75,8 @@ searchBox.addEventListener('input', function () {
     let noteCard = document.getElementsByClassName('noteCard');
     Array.from(noteCard).forEach(function (element) {
         let cardTxt = element.getElementsByTagName('p')[0].innerText.toLowerCase();
-        if (cardTxt.includes(inputVal)) {
+        let cardTitle = element.getElementsByTagName('h5')[0].innerText.toLowerCase();
+        if (cardTxt.includes(inputVal) || cardTitle.includes(inputVal)) {
             element.style.display = 'block';
         } else {
             element.style.display = 'none';
@@ -73,6 +85,6 @@ searchBox.addEventListener('input', function () {
 });
 
 // preventing enter key to search in searchbox
-$(document).on("keydown", "form", function(event) { 
+$(document).on("keydown", "form", function (event) {
     return event.key != "Enter";
 });
